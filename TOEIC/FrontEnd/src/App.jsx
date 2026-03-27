@@ -12,7 +12,6 @@ function App() {
   return (
     <div className="w-full min-h-screen">
       <Routes>
-
         {/* PUBLIC ROUTES */}
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -23,7 +22,6 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<Profile />} />
         </Route>
-
       </Routes>
     </div>
   );
