@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+<<<<<<< HEAD
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -24,6 +25,20 @@ function App() {
         </Route>
       </Routes>
     </div>
+=======
+import AdminLayout from "./layouts/AdminLayout";
+import Upload from "./pages/Admin/Upload/Upload";
+import AdminDashboard from "./pages/Admin/Dashboard/AdminDashboard";
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route path="upload" element={<Upload />} />
+         <Route path="dashboard" element={<AdminDashboard />} />
+      </Route>
+    </Routes>
+>>>>>>> 75b087fa26a87d74313f6378738ecd8b7b904d2b
   );
 }
 

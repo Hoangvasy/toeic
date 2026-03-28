@@ -1,5 +1,5 @@
-
 package com.toeic.backend.Entity;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -15,6 +15,7 @@ public class Part7 {
     @Column(columnDefinition = "TEXT")
     private String passage;
 
+    @Column(name = "question_number")
     private int questionNumber;
 
     private String question;
@@ -33,95 +34,46 @@ public class Part7 {
 
     private String answer;
 
-    // 🔥 QUAN TRỌNG
+    @Column(columnDefinition = "TEXT")
+    private String explanation;
+
     @ManyToOne
-    @JoinColumn(name = "test_id")
+    @JoinColumn(name = "test_id", nullable = false)
     private ToeicTest test;
 
     // ===== GETTER SETTER =====
+    public Long getId() { return id; }
 
-    public Long getId() {
-        return id;
-    }
+    public String getHeader() { return header; }
+    public void setHeader(String header) { this.header = header; }
 
-    public String getHeader() {
-        return header;
-    }
+    public String getPassage() { return passage; }
+    public void setPassage(String passage) { this.passage = passage; }
 
-    public void setHeader(String header) {
-        this.header = header;
-    }
+    public int getQuestionNumber() { return questionNumber; }
+    public void setQuestionNumber(int questionNumber) { this.questionNumber = questionNumber; }
 
-    public String getPassage() {
-        return passage;
-    }
+    public String getQuestion() { return question; }
+    public void setQuestion(String question) { this.question = question; }
 
-    public void setPassage(String passage) {
-        this.passage = passage;
-    }
+    public String getOptionA() { return optionA; }
+    public void setOptionA(String optionA) { this.optionA = optionA; }
 
-    public int getQuestionNumber() {
-        return questionNumber;
-    }
+    public String getOptionB() { return optionB; }
+    public void setOptionB(String optionB) { this.optionB = optionB; }
 
-    public void setQuestionNumber(int questionNumber) {
-        this.questionNumber = questionNumber;
-    }
+    public String getOptionC() { return optionC; }
+    public void setOptionC(String optionC) { this.optionC = optionC; }
 
-    public String getQuestion() {
-        return question;
-    }
+    public String getOptionD() { return optionD; }
+    public void setOptionD(String optionD) { this.optionD = optionD; }
 
-    public void setQuestion(String question) {
-        this.question = question;
-    }
+    public String getAnswer() { return answer; }
+    public void setAnswer(String answer) { this.answer = answer; }
 
-    public String getOptionA() {
-        return optionA;
-    }
+    public String getExplanation() { return explanation; }
+    public void setExplanation(String explanation) { this.explanation = explanation; }
 
-    public void setOptionA(String optionA) {
-        this.optionA = optionA;
-    }
-
-    public String getOptionB() {
-        return optionB;
-    }
-
-    public void setOptionB(String optionB) {
-        this.optionB = optionB;
-    }
-
-    public String getOptionC() {
-        return optionC;
-    }
-
-    public void setOptionC(String optionC) {
-        this.optionC = optionC;
-    }
-
-    public String getOptionD() {
-        return optionD;
-    }
-
-    public void setOptionD(String optionD) {
-        this.optionD = optionD;
-    }
-
-    public String getAnswer() {
-        return answer;
-    }
-
-    public void setAnswer(String answer) {
-        this.answer = answer;
-    }
-
-    // 🔥 FIX LỖI Ở ĐÂY
-    public ToeicTest getTest() {
-        return test;
-    }
-
-    public void setTest(ToeicTest test) {
-        this.test = test;
-    }
+    public ToeicTest getTest() { return test; }
+    public void setTest(ToeicTest test) { this.test = test; }
 }

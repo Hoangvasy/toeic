@@ -1,0 +1,51 @@
+/* variables.css */
+
+/* ==================== LIGHT MODE (mặc định) ==================== */
+:root {
+  /* Màu chính */
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  
+  /* Nền */
+  --bg-primary: #ffffff;        /* nền chính */
+  --bg-secondary: #f8fafc;      /* nền phụ (sidebar, card nhẹ) */
+  --bg-card: #ffffff;           /* nền card */
+
+  /* Chữ */
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+
+  /* Border */
+  --border: #e2e8f0;
+
+  /* Trạng thái */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+/* ==================== DARK MODE ==================== */
+.dark {
+  /* Màu chính */
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  
+  /* Nền */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e2937;
+  --bg-card: #1e2937;
+
+  /* Chữ */
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+
+  /* Border */
+  --border: #334155;
+
+  /* Trạng thái */
+  --success: #34d399;
+  --warning: #fbbf24;
+  --danger: #f87171;
+}

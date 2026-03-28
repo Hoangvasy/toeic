@@ -18,11 +18,18 @@ public class Part5Controller {
         this.service = service;
     }
 
+    // ✅ SAVE
     @PostMapping("/save")
     public List<Part5> save(
             @RequestBody List<Part5> list,
             @RequestParam Long testId
     ) {
         return service.saveAllWithTest(list, testId);
+    }
+
+    // ✅ GET DATA FROM DB
+    @GetMapping
+    public List<Part5> getByTestId(@RequestParam Long testId) {
+        return service.getByTestId(testId);
     }
 }

@@ -6,7 +6,6 @@ import com.toeic.backend.repository.Part7Repo;
 import com.toeic.backend.repository.ToeicTestRepo;
 
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service
@@ -25,24 +24,38 @@ public class Part7Service {
         this.testService = testService;
     }
 
+    // ✅ GET DATA theo testId
+    public List<Part7> getByTestId(Long testId) {
+        return repo.findByTestId(testId);
+    }
+
+    // ✅ SAVE / UPLOAD
     public List<Part7> saveAllWithTest(List<Part7> list, Long testId) {
 
-        // 🔥 check test tồn tại
+        if (list == null || list.isEmpty()) {
+            throw new RuntimeException("List rỗng!");
+        }
+
         ToeicTest test = testRepo.findById(testId)
                 .orElseThrow(() -> new RuntimeException("Test không tồn tại"));
 
-        // 🔥 tránh duplicate khi upload lại
+        // 🔥 XÓA DATA CŨ
         repo.deleteByTestId(testId);
 
-        // 🔥 gán test cho từng câu
+        // 🔥 SET TEST
         list.forEach(p -> p.setTest(test));
 
-        // 🔥 save
+        // 🔥 SAVE
         List<Part7> saved = repo.saveAll(list);
 
-        // 🔥 update trạng thái test
+        // 🔥 UPDATE STATUS TEST
         testService.updateStatus(testId);
 
         return saved;
+    }
+
+    // ✅ DELETE DATA theo testId
+    public void deleteByTestId(Long testId) {
+        repo.deleteByTestId(testId);
     }
 }

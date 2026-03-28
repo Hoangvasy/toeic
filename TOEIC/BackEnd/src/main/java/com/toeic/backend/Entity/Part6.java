@@ -10,6 +10,7 @@ public class Part6 {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(columnDefinition = "TEXT")
     private String passage;
 
     @Column(columnDefinition = "TEXT")
@@ -29,9 +30,15 @@ public class Part6 {
 
     private String answer;
 
-    // 🔥 QUAN TRỌNG
+    @Column(columnDefinition = "TEXT", nullable = false)
+    private String explanation;
+
+    @Column(name = "question_number", nullable = false)
+    private Integer questionNumber;
+
+    // 🔥 QUAN TRỌNG: liên kết tới test
     @ManyToOne
-    @JoinColumn(name = "test_id")
+    @JoinColumn(name = "test_id", nullable = false)
     private ToeicTest test;
 
     // ===== GETTER SETTER =====
@@ -96,7 +103,22 @@ public class Part6 {
         this.answer = answer;
     }
 
-    // 🔥 FIX LỖI Ở ĐÂY
+    public String getExplanation() {
+        return explanation;
+    }
+
+    public void setExplanation(String explanation) {
+        this.explanation = explanation;
+    }
+
+    public Integer getQuestionNumber() {
+        return questionNumber;
+    }
+
+    public void setQuestionNumber(Integer questionNumber) {
+        this.questionNumber = questionNumber;
+    }
+
     public ToeicTest getTest() {
         return test;
     }
