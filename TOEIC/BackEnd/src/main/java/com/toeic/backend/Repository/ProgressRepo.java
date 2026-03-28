@@ -1,5 +1,5 @@
-package com.toeic.backend.Repository;
+package com.toeic.backend.repository;
 
 public class ProgressRepo {
-    
+
 }

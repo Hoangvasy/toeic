@@ -19,8 +19,7 @@ public class Part6Service {
     public Part6Service(
             Part6Repo repo,
             ToeicTestRepo testRepo,
-            ToeicTestService testService
-    ) {
+            ToeicTestService testService) {
         this.repo = repo;
         this.testRepo = testRepo;
         this.testService = testService;

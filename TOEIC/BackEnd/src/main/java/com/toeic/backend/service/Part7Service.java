@@ -18,8 +18,7 @@ public class Part7Service {
     public Part7Service(
             Part7Repo repo,
             ToeicTestRepo testRepo,
-            ToeicTestService testService
-    ) {
+            ToeicTestService testService) {
         this.repo = repo;
         this.testRepo = testRepo;
         this.testService = testService;

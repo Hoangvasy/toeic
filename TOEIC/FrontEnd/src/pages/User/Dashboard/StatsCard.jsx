@@ -1,0 +1,10 @@
+function StatsCard({ title, value }) {
+  return (
+    <div className="bg-white p-5 rounded-2xl shadow">
+      <p className="text-gray-500 text-sm">{title}</p>
+      <p className="text-xl font-bold">{value}</p>
+    </div>
+  );
+}
+
+export default StatsCard;
