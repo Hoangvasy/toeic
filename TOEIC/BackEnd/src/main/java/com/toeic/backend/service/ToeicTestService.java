@@ -1,7 +1,8 @@
 package com.toeic.backend.service;
 
 import com.toeic.backend.Entity.ToeicTest;
-import com.toeic.backend.Repository.*;
+import com.toeic.backend.repository.*;
+
 import org.springframework.stereotype.Service;
 
 @Service

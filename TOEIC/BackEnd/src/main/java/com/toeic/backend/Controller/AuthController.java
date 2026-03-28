@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 import com.toeic.backend.Entity.PasswordResetToken;
 import com.toeic.backend.Entity.User;
-import com.toeic.backend.Repository.PasswordResetTokenRepository;
-import com.toeic.backend.Repository.UserRepository;
+import com.toeic.backend.repository.PasswordResetTokenRepository;
+import com.toeic.backend.repository.UserRepository;
 import com.toeic.backend.service.EmailService;
 
 @RestController

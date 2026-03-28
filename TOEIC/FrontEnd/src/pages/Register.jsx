@@ -89,7 +89,7 @@ function Register() {
       const res = await axios.post(
         "http://localhost:8080/api/auth/register",
         { username, email, password },
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       alert(res.data || "Register success");
@@ -100,17 +100,15 @@ function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center 
-    bg-gradient-to-br from-blue-900 via-blue-600 to-blue-300 px-4">
-
+    <div
+      className="min-h-screen flex items-center justify-center 
+    bg-gradient-to-br from-blue-900 via-blue-600 to-blue-300 px-4"
+    >
       {/* Outer Card */}
       <div className="w-full max-w-6xl h-[75vh] bg-white rounded-3xl shadow-2xl flex overflow-hidden">
-
         {/* LEFT SIDE */}
         <div className="hidden md:flex flex-col justify-center flex-1 p-12 text-white">
-
           <motion.div variants={container} initial="hidden" animate="show">
-
             <motion.h1
               variants={item}
               className="text-5xl font-bold mb-6 text-blue-900 
@@ -130,29 +128,22 @@ function Register() {
               />
             </motion.p>
 
-            <motion.ul
-              variants={item}
-              className="space-y-3 text-blue-900"
-            >
+            <motion.ul variants={item} className="space-y-3 text-blue-900">
               <li>✔ Lộ trình học rõ ràng</li>
               <li>✔ Luyện đề thực tế</li>
               <li>✔ Theo dõi tiến độ</li>
             </motion.ul>
-
           </motion.div>
         </div>
 
         {/* RIGHT SIDE */}
         <div className="flex-1 flex items-center justify-center p-8">
-
           <div className="relative group w-full max-w-md">
-
             {/* Glow */}
             <div className="absolute -inset-1 rounded-2xl bg-blue-300 opacity-30"></div>
 
             {/* Register Card */}
             <div className="relative bg-blue-200/80 backdrop-blur-md p-10 rounded-2xl shadow-xl border border-blue-300">
-
               <h2 className="text-2xl font-semibold text-blue-900 text-center mb-6">
                 Đăng ký
               </h2>
@@ -232,11 +223,9 @@ function Register() {
                   Đã có tài khoản? Đăng nhập
                 </Link>
               </div>
-
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );

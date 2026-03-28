@@ -1,10 +1,10 @@
 package com.toeic.backend.Controller;
 
 import com.toeic.backend.Entity.ToeicTest;
-import com.toeic.backend.Repository.ToeicTestRepo;
-import com.toeic.backend.Repository.Part5Repo;
-import com.toeic.backend.Repository.Part6Repo;
-import com.toeic.backend.Repository.Part7Repo;
+import com.toeic.backend.repository.Part5Repo;
+import com.toeic.backend.repository.Part6Repo;
+import com.toeic.backend.repository.Part7Repo;
+import com.toeic.backend.repository.ToeicTestRepo;
 import com.toeic.backend.service.ToeicTestService;
 
 import org.springframework.web.bind.annotation.*;
