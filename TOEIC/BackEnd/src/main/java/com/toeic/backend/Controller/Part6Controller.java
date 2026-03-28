@@ -18,11 +18,24 @@ public class Part6Controller {
         this.service = service;
     }
 
+    // ✅ SAVE
     @PostMapping("/save")
     public List<Part6> save(
             @RequestBody List<Part6> list,
             @RequestParam Long testId
     ) {
         return service.saveAllWithTest(list, testId);
+    }
+
+    // ✅ GET (🔥 CÁI BẠN THIẾU)
+    @GetMapping
+    public List<Part6> getByTestId(@RequestParam Long testId) {
+        return service.getByTestId(testId);
+    }
+
+    // ✅ DELETE (bonus - rất hữu ích)
+    @DeleteMapping
+    public void deleteByTestId(@RequestParam Long testId) {
+        service.deleteByTestId(testId);
     }
 }

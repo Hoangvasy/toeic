@@ -1,4 +1,4 @@
-:root {
+/* :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -65,4 +65,21 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+} */
+/* @tailwind base;
+@tailwind components;
+@tailwind utilities; */
+
+/* 1. Import font trước */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* 2. Import Tailwind v4 */
+@import "tailwindcss";
+
+/* 3. Dark mode variant cho Tailwind v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* 4. Áp dụng font */
+body {
+  font-family: 'Inter', sans-serif;
 }

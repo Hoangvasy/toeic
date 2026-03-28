@@ -26,24 +26,49 @@ public class Part6Service {
         this.testService = testService;
     }
 
+    // ✅ GET DATA
+    public List<Part6> getByTestId(Long testId) {
+        return repo.findByTestId(testId);
+    }
+
+    // ✅ SAVE
     public List<Part6> saveAllWithTest(List<Part6> list, Long testId) {
 
-        // 🔥 check test tồn tại
+        System.out.println("====== SAVE PART6 ======");
+
+        if (list == null || list.isEmpty()) {
+            throw new RuntimeException("List rỗng!");
+        }
+
+        System.out.println("👉 SIZE: " + list.size());
+
         ToeicTest test = testRepo.findById(testId)
                 .orElseThrow(() -> new RuntimeException("Test không tồn tại"));
 
-        // 🔥 tránh duplicate khi upload lại
-        repo.deleteByTestId(testId);
+        System.out.println("👉 TEST ID: " + test.getId());
 
-        // 🔥 gán test cho từng câu
+        // 🔥 XÓA DATA CŨ
+        repo.deleteByTestId(testId);
+        System.out.println("🗑️ Deleted old data");
+
+        // 🔥 SET TEST
         list.forEach(p -> p.setTest(test));
 
-        // 🔥 save
+        // 🔥 SAVE
         List<Part6> saved = repo.saveAll(list);
 
-        // 🔥 update trạng thái test
+        System.out.println("✅ SAVED: " + saved.size());
+
+        // 🔥 UPDATE STATUS TEST
         testService.updateStatus(testId);
 
+        System.out.println("====== DONE ======");
+
         return saved;
+    }
+
+    // ✅ DELETE
+    public void deleteByTestId(Long testId) {
+        repo.deleteByTestId(testId);
     }
 }

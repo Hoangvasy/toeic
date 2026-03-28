@@ -1,28 +1,82 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import UploadLayout from "./UploadLayout";
+import QuestionCard from "./QuestionCard";
 
 const UploadPart5 = ({ testId }) => {
   const [questions, setQuestions] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [loadingIndex, setLoadingIndex] = useState(null);
-  const [loadingAll, setLoadingAll] = useState(false);
+  const [search, setSearch] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analyzingIndex, setAnalyzingIndex] = useState(null);
+  const [progress, setProgress] = useState(0);
 
-  const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
+  const fileRef = useRef();
+  const key = `draft_part5_${testId}`;
 
-  // ================= PARSER =================
+  // ================= LOAD =================
+  useEffect(() => {
+    if (!testId) return;
+
+    const loadData = async () => {
+      try {
+        const res = await fetch(`http://localhost:8080/api/part5?testId=${testId}`);
+        const data = await res.json();
+
+        if (data && data.length > 0) {
+          const mapped = data.map((q) => ({
+            number: q.questionNumber?.toString(),
+            label: q.label || "",
+            question: q.question || "",
+            options: {
+              A: q.optionA || "",
+              B: q.optionB || "",
+              C: q.optionC || "",
+              D: q.optionD || "",
+            },
+            answer: q.answer || "",
+            explanation: q.explanation || "",
+          }));
+          setQuestions(mapped);
+        } else {
+          const saved = localStorage.getItem(key);
+          if (saved) setQuestions(JSON.parse(saved));
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    loadData();
+  }, [testId]);
+
+  // ================= AUTO SAVE =================
+  useEffect(() => {
+    if (!testId) return;
+    const timeout = setTimeout(() => {
+      localStorage.setItem(key, JSON.stringify(questions));
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [questions, testId]);
+
+  // ================= DELETE =================
+  const handleDeleteQuestion = (index) => {
+    if (!window.confirm("Xóa câu này?")) return;
+    setQuestions((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDiscard = () => {
+    if (!window.confirm("Bỏ dữ liệu hiện tại?")) return;
+    setQuestions([]);
+    setSelectedFile(null);
+    localStorage.removeItem(key);
+  };
+
+  // ================= PARSE =================
   const parseQuestions = (rawText) => {
-    const text = rawText
-      .replace(/\r\n/g, "\n")
-      .replace(/\n+/g, "\n")
-      .replace(/\s+/g, " ")
-      .trim();
-
+    const text = rawText.replace(/\r\n/g, "\n").replace(/\n{2,}/g, "\n").trim();
     const answerStart = text.search(/\d{3}\.\s*[A-D]\s*-/);
-
-    const questionText =
-      answerStart !== -1 ? text.slice(0, answerStart) : text;
-
-    const answerText =
-      answerStart !== -1 ? text.slice(answerStart) : "";
+    const questionText = answerStart !== -1 ? text.slice(0, answerStart) : text;
+    const answerText = answerStart !== -1 ? text.slice(answerStart) : "";
 
     const blocks = questionText
       .split(/(?=\d{3}\.)/)
@@ -31,18 +85,21 @@ const UploadPart5 = ({ testId }) => {
 
     const questions = blocks.map((block) => {
       const number = block.match(/^(\d{3})\./)?.[1] || "";
+      const question = block.match(/^\d{3}\.\s*(.*?)\s*A\./s)?.[1]?.trim() || "";
 
-      const question =
-        block.match(/^\d{3}\.\s*(.*?)\s*A\./s)?.[1]?.trim() || "";
+      let options = { A: "", B: "", C: "", D: "" };
+      const optMatch = block.match(
+        /A\.\s*(.*?)\s*B\.\s*(.*?)\s*C\.\s*(.*?)\s*D\.\s*(.*)/s
+      );
 
-      const options = {};
-
-      ["A", "B", "C", "D"].forEach((letter) => {
-        const match = block.match(
-          new RegExp(`${letter}\\.\\s*(.*?)(?=\\s*[A-D]\\.|$)`, "s")
-        );
-        options[letter] = match ? match[1].trim() : "";
-      });
+      if (optMatch) {
+        options = {
+          A: optMatch[1].trim(),
+          B: optMatch[2].trim(),
+          C: optMatch[3].trim(),
+          D: optMatch[4].trim(),
+        };
+      }
 
       return {
         number,
@@ -54,7 +111,6 @@ const UploadPart5 = ({ testId }) => {
       };
     });
 
-    // parse answer
     const answers = {};
     const answerRegex =
       /(\d{3})\.\s*([A-D])\s*-\s*(.*?)(?=\s*\d{3}\.\s*[A-D]\s*-|$)/gs;
@@ -62,11 +118,7 @@ const UploadPart5 = ({ testId }) => {
     let match;
     while ((match = answerRegex.exec(answerText)) !== null) {
       const [, num, ans, exp] = match;
-
-      answers[num] = {
-        answer: ans,
-        explanation: exp.replace(/\s+/g, " ").trim(),
-      };
+      answers[num] = { answer: ans, explanation: exp.trim() };
     }
 
     return questions.map((q) => ({
@@ -76,108 +128,44 @@ const UploadPart5 = ({ testId }) => {
     }));
   };
 
-  // ================= FILE =================
+  // ================= UPLOAD =================
   const handleChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
+
+    if (questions.length > 0 && !window.confirm("Ghi đè dữ liệu hiện tại?"))
+      return;
 
     setSelectedFile(file);
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      const parsed = parseQuestions(event.target.result);
-      setQuestions(parsed);
+      setQuestions(parseQuestions(event.target.result));
     };
-
     reader.readAsText(file);
-  };
-
-  // ================= AI =================
-  const analyzeWithAI = async (index) => {
-    const q = questions[index];
-    if (!q.question) return;
-
-    setLoadingIndex(index);
-
-    const block = `
-${q.question}
-A. ${q.options.A}
-B. ${q.options.B}
-C. ${q.options.C}
-D. ${q.options.D}
-`;
-
-    try {
-      const res = await fetch(
-        "http://localhost:8080/api/ai/analyze",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question: block }),
-        }
-      );
-
-      if (!res.ok) {
-        console.error("API ERROR:", res.status);
-        return;
-      }
-
-      const data = await res.json();
-
-      const updated = [...questions];
-
-      if (data.label) updated[index].label = data.label;
-      if (data.answer) updated[index].answer = data.answer;
-
-      setQuestions(updated);
-    } catch (err) {
-      console.error("FETCH ERROR:", err);
-    }
-
-    setLoadingIndex(null);
-  };
-
-  const analyzeAll = async () => {
-    setLoadingAll(true);
-
-    for (let i = 0; i < questions.length; i++) {
-      await analyzeWithAI(i);
-      await sleep(1500); // tránh 429
-    }
-
-    setLoadingAll(false);
   };
 
   // ================= EDIT =================
   const handleChangeQuestion = (index, field, value) => {
-    const updated = [...questions];
-
-    if (["A", "B", "C", "D"].includes(field)) {
-      updated[index].options[field] = value;
-    } else {
-      updated[index][field] = value;
-    }
-
-    setQuestions(updated);
+    setQuestions((prev) =>
+      prev.map((q, i) => {
+        if (i !== index) return q;
+        if (["A", "B", "C", "D"].includes(field)) {
+          return { ...q, options: { ...q.options, [field]: value } };
+        }
+        return { ...q, [field]: value };
+      })
+    );
   };
 
   // ================= SAVE =================
   const handleSave = async () => {
-    if (!testId) {
-      alert("❗ Chọn đề trước!");
-      return;
-    }
-
-    const invalid = questions.filter((q) => !q.answer);
-
-    if (invalid.length > 0) {
-      alert("⚠ Thiếu đáp án!");
-      return;
-    }
+    if (!testId) return alert("❗ Chọn đề trước!");
+    if (questions.some((q) => !q.answer)) return alert("⚠ Thiếu đáp án!");
 
     const payload = questions.map((q) => ({
       testId,
-      questionNumber: q.number,
+      questionNumber: parseInt(q.number),
       label: q.label,
       question: q.question,
       optionA: q.options.A,
@@ -189,123 +177,150 @@ D. ${q.options.D}
     }));
 
     try {
-      await fetch(
-        `http://localhost:8080/api/part5/save?testId=${testId}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
+      await fetch(`http://localhost:8080/api/part5/save?testId=${testId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
       alert("✅ Saved!");
+      localStorage.removeItem(key);
     } catch (err) {
       console.error(err);
       alert("❌ Save failed");
     }
   };
 
-  // ================= UI =================
+  // ================= AI ALL =================
+  const analyzeAllWithAI = async () => {
+    if (questions.length === 0 || isAnalyzing) return;
+
+    setIsAnalyzing(true);
+    setProgress(0);
+
+    const updated = [...questions];
+
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
+      setAnalyzingIndex(i);
+
+      const block = `
+${q.question}
+A. ${q.options.A}
+B. ${q.options.B}
+C. ${q.options.C}
+D. ${q.options.D}`;
+
+      try {
+        const res = await fetch("http://localhost:8080/api/ai/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: block }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          updated[i] = {
+            ...updated[i],
+            label: data.label || updated[i].label,
+            answer: data.answer || updated[i].answer,
+          };
+        }
+      } catch (err) {
+        console.error(err);
+      }
+
+      setProgress(Math.round(((i + 1) / questions.length) * 100));
+      setQuestions([...updated]);
+
+      await new Promise((res) => setTimeout(res, 300));
+    }
+
+    setIsAnalyzing(false);
+    setAnalyzingIndex(null);
+    setProgress(0);
+
+    alert("✅ Hoàn tất!");
+  };
+
+  // ================= FILTER FIX =================
+  const filtered = questions.filter((q) =>
+    q.question.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <div style={{ padding: 40, maxWidth: 900, margin: "auto" }}>
-      <h1>Upload Part 5</h1>
-
-      <input type="file" accept=".txt" onChange={handleChange} />
-
-      {selectedFile && <p>📄 {selectedFile.name}</p>}
+    <UploadLayout
+      title="Upload Part 5"
+      selectedFile={selectedFile}
+      hasData={questions.length > 0}
+      onUploadClick={() => fileRef.current.click()}
+      onDiscard={handleDiscard}
+      onSave={handleSave}
+    >
 
       {questions.length > 0 && (
-        <button onClick={analyzeAll} disabled={loadingAll}>
-          {loadingAll ? "Analyzing..." : "🤖 Analyze All"}
-        </button>
-      )}
-
-      {questions.map((q, index) => (
-        <div
-          key={index}
-          style={{
-            border: "1px solid #ddd",
-            padding: 20,
-            marginTop: 20,
-            borderRadius: 8,
-          }}
-        >
-          <h3>Question {q.number}</h3>
-
-          <button
-            onClick={() => analyzeWithAI(index)}
-            disabled={loadingIndex === index}
-          >
-            {loadingIndex === index ? "..." : "AI"}
-          </button>
-
-          <p>🏷 Label: <b>{q.label || "N/A"}</b></p>
-
-          <textarea
-            value={q.question}
-            onChange={(e) =>
-              handleChangeQuestion(index, "question", e.target.value)
-            }
-            style={{ width: "100%", marginTop: 10 }}
-          />
-
-          {["A", "B", "C", "D"].map((opt) => (
+        <>
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
             <input
-              key={opt}
-              value={q.options[opt]}
-              onChange={(e) =>
-                handleChangeQuestion(index, opt, e.target.value)
-              }
-              style={{
-                width: "100%",
-                marginTop: 5,
-                background:
-                  q.answer === opt ? "#d4edda" : "white",
-              }}
-              placeholder={`Option ${opt}`}
+              placeholder="🔍 Search..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex-1 border p-3 rounded-xl"
             />
-          ))}
 
-          <select
-            value={q.answer}
-            onChange={(e) =>
-              handleChangeQuestion(index, "answer", e.target.value)
-            }
-          >
-            <option value="">Answer</option>
-            <option>A</option>
-            <option>B</option>
-            <option>C</option>
-            <option>D</option>
-          </select>
-
-          <textarea
-            value={q.explanation}
-            onChange={(e) =>
-              handleChangeQuestion(index, "explanation", e.target.value)
-            }
-            placeholder="Explanation..."
-            style={{ width: "100%", marginTop: 10 }}
-          />
-        </div>
-      ))}
-
-      {questions.length > 0 && (
-        <button
-          onClick={handleSave}
-          style={{
-            marginTop: 30,
-            padding: "10px 20px",
-            background: "#4a6cf7",
-            color: "white",
-            border: "none",
-            borderRadius: 6,
-          }}
-        >
-          💾 Save
-        </button>
+            <button
+              onClick={analyzeAllWithAI}
+              disabled={isAnalyzing}
+              className="bg-purple-600 text-white px-6 py-3 rounded-xl"
+            >
+              {isAnalyzing
+                ? `Đang phân tích... ${progress}%`
+                : `🤖 AI (${questions.length} câu)`}
+            </button>
+          </div>
+        </>
       )}
-    </div>
+
+      {isAnalyzing && (
+        <div className="mb-6">
+          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-purple-600"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <p className="text-center text-sm text-gray-500 mt-1">
+            Câu {analyzingIndex + 1}/{questions.length}
+          </p>
+        </div>
+      )}
+
+      <div className="space-y-6">
+        {filtered.map((q) => {
+          const realIndex = questions.findIndex(
+            (item) => item.number === q.number
+          );
+
+          return (
+            <QuestionCard
+              key={realIndex}
+              question={q}
+              index={realIndex}
+              onQuestionChange={handleChangeQuestion}
+              onDelete={() => handleDeleteQuestion(realIndex)}
+            />
+          );
+        })}
+      </div>
+
+      <input
+        ref={fileRef}
+        type="file"
+        accept=".txt"
+        onChange={handleChange}
+        className="hidden"
+      />
+    </UploadLayout>
   );
 };
 
