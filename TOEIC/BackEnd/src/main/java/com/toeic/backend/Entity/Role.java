@@ -1,5 +1,5 @@
-package com.toeic.backend.Entity;
+package com.toeic.backend.entity;
 
 public class Role {
-    
+
 }

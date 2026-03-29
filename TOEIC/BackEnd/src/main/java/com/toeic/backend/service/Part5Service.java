@@ -1,9 +1,10 @@
 package com.toeic.backend.service;
 
-import com.toeic.backend.Entity.Part5;
-import com.toeic.backend.Entity.ToeicTest;
+import com.toeic.backend.entity.Part5;
+import com.toeic.backend.entity.ToeicTest;
 import com.toeic.backend.repository.Part5Repo;
 import com.toeic.backend.repository.ToeicTestRepo;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;

@@ -1,6 +1,6 @@
-package com.toeic.backend.Controller;
+package com.toeic.backend.controller;
 
-import com.toeic.backend.Entity.Part7;
+import com.toeic.backend.entity.Part7;
 import com.toeic.backend.service.Part7Service;
 
 import org.springframework.web.bind.annotation.*;
@@ -21,8 +21,7 @@ public class Part7Controller {
     @PostMapping("/save")
     public List<Part7> save(
             @RequestBody List<Part7> list,
-            @RequestParam Long testId
-    ) {
+            @RequestParam Long testId) {
         return service.saveAllWithTest(list, testId);
     }
 

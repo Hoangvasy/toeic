@@ -1,7 +1,7 @@
 package com.toeic.backend.service;
 
-import com.toeic.backend.Entity.Part7;
-import com.toeic.backend.Entity.ToeicTest;
+import com.toeic.backend.entity.Part7;
+import com.toeic.backend.entity.ToeicTest;
 import com.toeic.backend.repository.Part7Repo;
 import com.toeic.backend.repository.ToeicTestRepo;
 
@@ -18,8 +18,7 @@ public class Part7Service {
     public Part7Service(
             Part7Repo repo,
             ToeicTestRepo testRepo,
-            ToeicTestService testService
-    ) {
+            ToeicTestService testService) {
         this.repo = repo;
         this.testRepo = testRepo;
         this.testService = testService;

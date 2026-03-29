@@ -1,10 +1,10 @@
-package com.toeic.backend.Controller;
+package com.toeic.backend.controller;
 
-import com.toeic.backend.Entity.ToeicTest;
-import com.toeic.backend.repository.ToeicTestRepo;
+import com.toeic.backend.entity.ToeicTest;
 import com.toeic.backend.repository.Part5Repo;
 import com.toeic.backend.repository.Part6Repo;
 import com.toeic.backend.repository.Part7Repo;
+import com.toeic.backend.repository.ToeicTestRepo;
 import com.toeic.backend.service.ToeicTestService;
 
 import org.springframework.web.bind.annotation.*;
@@ -29,8 +29,7 @@ public class ToeicTestController {
             ToeicTestRepo testRepo,
             Part5Repo part5Repo,
             Part6Repo part6Repo,
-            Part7Repo part7Repo
-    ) {
+            Part7Repo part7Repo) {
         this.service = service;
         this.testRepo = testRepo;
         this.part5Repo = part5Repo;
@@ -64,7 +63,6 @@ public class ToeicTestController {
         return ResponseEntity.ok(Map.of(
                 "part5", part5Repo.findByTestId(id),
                 "part6", part6Repo.findByTestId(id),
-                "part7", part7Repo.findByTestId(id)
-        ));
+                "part7", part7Repo.findByTestId(id)));
     }
 }

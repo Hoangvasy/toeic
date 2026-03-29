@@ -1,5 +1,5 @@
-package com.toeic.backend.Data;
+package com.toeic.backend.data;
 
 public class RegisterData {
-    
+
 }

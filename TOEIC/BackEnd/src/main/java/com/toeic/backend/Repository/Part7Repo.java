@@ -1,7 +1,8 @@
 package com.toeic.backend.repository;
 
-import com.toeic.backend.Entity.Part7;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.toeic.backend.entity.Part7;
 
 import java.util.List;
 

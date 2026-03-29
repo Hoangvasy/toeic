@@ -1,7 +1,8 @@
 package com.toeic.backend.service;
 
-import com.toeic.backend.Entity.ToeicTest;
+import com.toeic.backend.entity.ToeicTest;
 import com.toeic.backend.repository.*;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,8 +17,7 @@ public class ToeicTestService {
             ToeicTestRepo testRepo,
             Part5Repo part5Repo,
             Part6Repo part6Repo,
-            Part7Repo part7Repo
-    ) {
+            Part7Repo part7Repo) {
         this.testRepo = testRepo;
         this.part5Repo = part5Repo;
         this.part6Repo = part6Repo;
