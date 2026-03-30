@@ -52,25 +52,25 @@ public class AuthController {
     // LOGIN
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody User request) {
+    public ResponseEntity<?> login(@RequestBody User request, HttpSession session) {
 
         User user = userRepository.findByEmail(request.getEmail());
 
         if (user != null &&
                 passwordEncoder.matches(request.getPassword(), user.getPassword())) {
 
-            String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
+            // lưu user vào session
+            session.setAttribute("user", user);
 
             return ResponseEntity.ok(Map.of(
-                    "token", token,
-                    "role", user.getRole(),
-                    "email", user.getEmail()));
+                    "email", user.getEmail(),
+                    "role", user.getRole()));
         }
 
         return ResponseEntity.badRequest().body("Invalid email or password");
     }
 
-    // PROFILE (JWT)
+    // PROFILE
 
     @GetMapping("/profile")
     public ResponseEntity<?> profile(@RequestHeader("Authorization") String header) {
@@ -118,6 +118,20 @@ public class AuthController {
         session.invalidate();
 
         return ResponseEntity.ok("Logout success");
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(HttpSession session) {
+
+        User user = (User) session.getAttribute("user");
+
+        if (user == null) {
+            return ResponseEntity.status(401).body("Not logged in");
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "email", user.getEmail(),
+                "role", user.getRole()));
     }
 
 }

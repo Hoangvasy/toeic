@@ -27,16 +27,23 @@ function Login() {
 
   const login = async () => {
     try {
-      const res = await axios.post("http://localhost:8080/api/auth/login", {
-        email: email,
-        password: password,
+      await axios.post(
+        "http://localhost:8080/api/auth/login",
+        {
+          email: email,
+          password: password,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+
+      // sau khi login thành công -> kiểm tra role
+      const res = await axios.get("http://localhost:8080/api/auth/me", {
+        withCredentials: true,
       });
 
-      const token = res.data.token;
       const role = res.data.role;
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("role", role);
 
       if (role === "ADMIN") {
         navigate("/admin/dashboard");

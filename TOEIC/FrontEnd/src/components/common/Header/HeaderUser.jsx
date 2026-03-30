@@ -1,8 +1,26 @@
 import { Search, Bell, Sun, Moon, ChevronDown } from "lucide-react";
 import { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function HeaderUser({ darkMode, toggleDarkMode }) {
   const [open, setOpen] = useState(false);
+
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await axios.post(
+        "http://localhost:8080/api/auth/logout",
+        {},
+        { withCredentials: true },
+      );
+
+      navigate("/login");
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+  };
 
   return (
     <div className="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 sticky top-0 z-40">
@@ -78,7 +96,10 @@ function HeaderUser({ darkMode, toggleDarkMode }) {
 
               <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
 
-              <button className="w-full text-left px-4 py-2 hover:bg-red-50 text-red-500 text-sm">
+              <button
+                onClick={handleLogout}
+                className="w-full text-left px-4 py-2 hover:bg-red-50 text-red-500 text-sm"
+              >
                 Đăng xuất
               </button>
             </div>
