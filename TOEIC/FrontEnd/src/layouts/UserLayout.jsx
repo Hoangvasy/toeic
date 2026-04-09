@@ -23,11 +23,11 @@ function UserLayout() {
         const role = res.data.role;
 
         if (role !== "USER") {
-          navigate("/login");
+          navigate("/login", { replace: true });
         }
       })
       .catch(() => {
-        navigate("/login");
+        navigate("/login", { replace: true });
       });
   };
 

@@ -21,11 +21,11 @@ function AdminLayout() {
         const role = res.data.role;
 
         if (role !== "ADMIN") {
-          navigate("/login");
+          navigate("/login", { replace: true });
         }
       })
       .catch(() => {
-        navigate("/login");
+        navigate("/login", { replace: true });
       });
   };
 
