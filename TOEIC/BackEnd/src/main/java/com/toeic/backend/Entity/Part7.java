@@ -10,6 +10,10 @@ public class Part7 {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Long groupId;
+
+    private String type;
+
     private String header;
 
     @Column(columnDefinition = "TEXT")
@@ -42,8 +46,25 @@ public class Part7 {
     private ToeicTest test;
 
     // ===== GETTER SETTER =====
+
     public Long getId() {
         return id;
+    }
+
+    public Long getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(Long groupId) {
+        this.groupId = groupId;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getHeader() {

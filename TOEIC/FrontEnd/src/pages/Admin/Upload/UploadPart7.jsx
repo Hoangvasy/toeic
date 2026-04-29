@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 
 const UploadPart7 = ({ testId }) => {
   const [selectedFile, setSelectedFile] = useState(null);
-  const [groups, setGroups] = useState([]); // ✅ group theo passage
+  const [groups, setGroups] = useState([]);
   const fileRef = useRef(null);
 
   const key = `draft_part7_${testId}`;
@@ -27,16 +27,17 @@ const UploadPart7 = ({ testId }) => {
 
   // ================= PARSER =================
   const parseQuestions = (rawText) => {
-    const text = rawText
-      .replace(/\r\n/g, "\n")
-      .replace(/\n+/g, "\n");
+    const text = rawText.replace(/\r\n/g, "\n").replace(/\n+/g, "\n");
 
+    // ================= SPLIT ANSWERS =================
     const answerStart = text.search(/\b\d{3}\.\s*[A-D]\s*-/);
     const mainText = answerStart !== -1 ? text.slice(0, answerStart) : text;
     const answerText = answerStart !== -1 ? text.slice(answerStart) : "";
 
     const answers = {};
-    const answerRegex = /(\d{3})\.\s*([A-D])\s*-\s*([\s\S]*?)(?=\n\s*\d{3}\.|$)/g;
+
+    const answerRegex =
+      /(\d{3})\.\s*([A-D])\s*-\s*([\s\S]*?)(?=\n\s*\d{3}\.|$)/g;
 
     let m;
     while ((m = answerRegex.exec(answerText)) !== null) {
@@ -46,10 +47,14 @@ const UploadPart7 = ({ testId }) => {
       };
     }
 
-    const blocks = mainText.split(/(?=Questions\s+\d+-\d+)/i);
+    // ================= SPLIT GROUP =================
+    const blocks =
+      mainText.match(
+        /Questions\s+\d+-\d+\s+refer\s+to\s+the\s+following[\s\S]*?(?=Questions\s+\d+-\d+\s+refer\s+to\s+the\s+following|$)/gi,
+      ) || [];
 
     return blocks
-      .map((block) => {
+      .map((block, index) => {
         const lines = block
           .split("\n")
           .map((l) => l.trim())
@@ -59,14 +64,36 @@ const UploadPart7 = ({ testId }) => {
         let passage = [];
         let questions = [];
         let current = null;
+        let type = "SINGLE";
+
+        const groupId = index + 1;
 
         lines.forEach((line) => {
+          // ===== HEADER =====
           if (/^Questions\s+\d+-\d+/i.test(line)) {
             header = line;
+
+            // detect type
+            const refMatch = line.match(/refer to the following (.*)/i);
+
+            if (refMatch) {
+              const text = refMatch[1].toLowerCase();
+
+              if (text.includes(",") && text.includes("and")) {
+                type = "TRIPLE";
+              } else if (text.includes(" and ")) {
+                type = "DOUBLE";
+              } else {
+                type = "SINGLE";
+              }
+            }
+
             return;
           }
 
+          // ===== QUESTION =====
           const qMatch = line.match(/^(\d{3})\.\s*(.*)/);
+
           if (qMatch) {
             if (current) questions.push(current);
 
@@ -77,20 +104,25 @@ const UploadPart7 = ({ testId }) => {
               answer: "",
               explanation: "",
             };
+
             return;
           }
 
+          // ===== OPTION =====
           const optMatch = line.match(/^([A-D])\.\s*(.*)/);
+
           if (optMatch && current) {
             current.options[optMatch[1]] = optMatch[2];
             return;
           }
 
+          // ===== PASSAGE =====
           if (!current) passage.push(line);
         });
 
         if (current) questions.push(current);
 
+        // ===== ADD ANSWERS =====
         questions.forEach((q) => {
           if (answers[q.number]) {
             q.answer = answers[q.number].answer;
@@ -99,6 +131,8 @@ const UploadPart7 = ({ testId }) => {
         });
 
         return {
+          groupId,
+          type,
           header,
           passage: passage.join("\n"),
           questions,
@@ -115,6 +149,7 @@ const UploadPart7 = ({ testId }) => {
     setSelectedFile(file);
 
     const reader = new FileReader();
+
     reader.onload = (event) => {
       const parsed = parseQuestions(event.target.result || "");
       setGroups(parsed);
@@ -136,14 +171,14 @@ const UploadPart7 = ({ testId }) => {
           const newQ = g.questions.filter((_, j) => j !== qIndex);
           return { ...g, questions: newQ };
         })
-        .filter((g) => g.questions.length > 0)
+        .filter((g) => g.questions.length > 0),
     );
   };
 
   // ================= UPDATE =================
   const updateGroup = (index, value) => {
     setGroups((prev) =>
-      prev.map((g, i) => (i === index ? { ...g, passage: value } : g))
+      prev.map((g, i) => (i === index ? { ...g, passage: value } : g)),
     );
   };
 
@@ -166,7 +201,7 @@ const UploadPart7 = ({ testId }) => {
         });
 
         return { ...g, questions: newQuestions };
-      })
+      }),
     );
   };
 
@@ -179,6 +214,8 @@ const UploadPart7 = ({ testId }) => {
     groups.forEach((g) => {
       g.questions.forEach((q) => {
         payload.push({
+          groupId: g.groupId,
+          type: g.type,
           header: g.header || "",
           passage: g.passage || "",
           questionNumber: Number(q.number),
@@ -224,7 +261,9 @@ const UploadPart7 = ({ testId }) => {
           onChange={handleChange}
           className="hidden"
         />
+
         <p>📂 Click để chọn file</p>
+
         {selectedFile && <p className="mt-2">📄 {selectedFile.name}</p>}
       </div>
 
@@ -234,12 +273,10 @@ const UploadPart7 = ({ testId }) => {
           <div key={gi} className="bg-white p-6 rounded-2xl shadow border">
             <div className="flex justify-between mb-2">
               <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs">
-                {g.header}
+                {g.header} • {g.type}
               </span>
-              <button
-                onClick={() => deleteGroup(gi)}
-                className="text-red-500"
-              >
+
+              <button onClick={() => deleteGroup(gi)} className="text-red-500">
                 🗑
               </button>
             </div>
@@ -254,6 +291,7 @@ const UploadPart7 = ({ testId }) => {
               <div key={qi} className="border rounded-xl p-4 mb-4">
                 <div className="flex justify-between">
                   <b>{q.number}</b>
+
                   <button
                     onClick={() => deleteQuestion(gi, qi)}
                     className="text-red-500"

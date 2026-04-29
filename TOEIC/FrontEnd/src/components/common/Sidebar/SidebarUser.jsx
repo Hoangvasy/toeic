@@ -9,12 +9,14 @@ import {
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
+  BookMarked,
 } from "lucide-react";
 
 const menu = [
   { name: "Tổng quan", path: "/dashboard", icon: LayoutDashboard },
   { name: "Kiểm tra", path: "/diagnostic", icon: ClipboardList },
   { name: "Luyện tập", path: "/practice", icon: BookOpen },
+  { name: "Từ vựng", path: "/vocabulary", icon: BookMarked },
   { name: "AI Path", path: "/ai-path", icon: Cpu },
   { name: "Tiến độ", path: "/progress", icon: BarChart3 },
   { name: "Hồ sơ", path: "/profile", icon: User },

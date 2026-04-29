@@ -1,22 +1,24 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 
-export default function Timer({ seconds }) {
-  const [time, setTime] = useState(seconds);
+const Timer = () => {
+  const [time, setTime] = useState(15 * 60);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setTime((prev) => prev - 1);
+      setTime((t) => t - 1);
     }, 1000);
 
     return () => clearInterval(interval);
   }, []);
 
-  const minutes = Math.floor(time / 60);
+  const min = Math.floor(time / 60);
   const sec = time % 60;
 
   return (
-    <div className="text-red-500 font-semibold">
-      ⏱ {minutes}:{sec.toString().padStart(2, "0")}
+    <div className="font-bold text-orange-500">
+      {min}:{sec.toString().padStart(2, "0")}
     </div>
   );
-}
+};
+
+export default Timer;

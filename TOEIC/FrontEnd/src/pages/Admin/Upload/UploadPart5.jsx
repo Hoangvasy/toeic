@@ -19,7 +19,12 @@ const UploadPart5 = ({ testId }) => {
 
     const loadData = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/part5?testId=${testId}`);
+        const res = await fetch(
+          `http://localhost:8080/api/part5?testId=${testId}`,
+          {
+            credentials: "include",
+          },
+        );
         const data = await res.json();
 
         if (data && data.length > 0) {
@@ -73,7 +78,10 @@ const UploadPart5 = ({ testId }) => {
 
   // ================= PARSE =================
   const parseQuestions = (rawText) => {
-    const text = rawText.replace(/\r\n/g, "\n").replace(/\n{2,}/g, "\n").trim();
+    const text = rawText
+      .replace(/\r\n/g, "\n")
+      .replace(/\n{2,}/g, "\n")
+      .trim();
     const answerStart = text.search(/\d{3}\.\s*[A-D]\s*-/);
     const questionText = answerStart !== -1 ? text.slice(0, answerStart) : text;
     const answerText = answerStart !== -1 ? text.slice(answerStart) : "";
@@ -85,11 +93,12 @@ const UploadPart5 = ({ testId }) => {
 
     const questions = blocks.map((block) => {
       const number = block.match(/^(\d{3})\./)?.[1] || "";
-      const question = block.match(/^\d{3}\.\s*(.*?)\s*A\./s)?.[1]?.trim() || "";
+      const question =
+        block.match(/^\d{3}\.\s*(.*?)\s*A\./s)?.[1]?.trim() || "";
 
       let options = { A: "", B: "", C: "", D: "" };
       const optMatch = block.match(
-        /A\.\s*(.*?)\s*B\.\s*(.*?)\s*C\.\s*(.*?)\s*D\.\s*(.*)/s
+        /A\.\s*(.*?)\s*B\.\s*(.*?)\s*C\.\s*(.*?)\s*D\.\s*(.*)/s,
       );
 
       if (optMatch) {
@@ -154,7 +163,7 @@ const UploadPart5 = ({ testId }) => {
           return { ...q, options: { ...q.options, [field]: value } };
         }
         return { ...q, [field]: value };
-      })
+      }),
     );
   };
 
@@ -180,6 +189,7 @@ const UploadPart5 = ({ testId }) => {
       await fetch(`http://localhost:8080/api/part5/save?testId=${testId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 
@@ -215,6 +225,7 @@ D. ${q.options.D}`;
         const res = await fetch("http://localhost:8080/api/ai/analyze", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ question: block }),
         });
 
@@ -245,7 +256,7 @@ D. ${q.options.D}`;
 
   // ================= FILTER FIX =================
   const filtered = questions.filter((q) =>
-    q.question.toLowerCase().includes(search.toLowerCase())
+    q.question.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
@@ -257,7 +268,6 @@ D. ${q.options.D}`;
       onDiscard={handleDiscard}
       onSave={handleSave}
     >
-
       {questions.length > 0 && (
         <>
           <div className="flex flex-col sm:flex-row gap-3 mb-6">
@@ -298,7 +308,7 @@ D. ${q.options.D}`;
       <div className="space-y-6">
         {filtered.map((q) => {
           const realIndex = questions.findIndex(
-            (item) => item.number === q.number
+            (item) => item.number === q.number,
           );
 
           return (

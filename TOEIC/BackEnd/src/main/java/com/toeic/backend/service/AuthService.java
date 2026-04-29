@@ -5,26 +5,25 @@ import org.springframework.stereotype.Service;
 
 import com.toeic.backend.entity.User;
 import com.toeic.backend.repository.UserRepository;
-import com.toeic.backend.security.JwtUtil;
 
 @Service
 public class AuthService {
 
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
-    @Autowired
-    JwtUtil jwtUtil;
+    public User login(String email, String password) {
 
-    public String login(String username, String password) {
+        User user = userRepository.findByEmail(email);
 
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
 
         if (!user.getPassword().equals(password)) {
             throw new RuntimeException("Invalid password");
         }
 
-        return jwtUtil.generateToken(username);
+        return user;
     }
 }

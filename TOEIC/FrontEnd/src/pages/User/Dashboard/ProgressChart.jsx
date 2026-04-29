@@ -7,6 +7,7 @@ import {
   CartesianGrid,
   ReferenceLine,
 } from "recharts";
+
 import { motion } from "framer-motion";
 import { useState } from "react";
 
@@ -52,10 +53,13 @@ const tabs = [
 function ProgressChart() {
   const [activeTab, setActiveTab] = useState("score");
 
-  const currentTab = tabs.find((t) => t.key === activeTab);
-  const data = currentTab.data;
+  const currentTab = tabs.find((t) => t.key === activeTab) || tabs[0];
+
+  const data = currentTab.data || [];
 
   const goal = activeTab === "score" ? 750 : null;
+
+  const currentValue = data.length ? data[data.length - 1].value : "-";
 
   return (
     <motion.div
@@ -99,20 +103,16 @@ function ProgressChart() {
       </div>
 
       {/* CHART */}
-      <div className="h-56">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="w-full min-h-[240px]">
+        <ResponsiveContainer width="100%" height={240}>
           <LineChart data={data}>
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="#e5e7eb"
-              className="dark:stroke-gray-700"
-            />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
 
-            <XAxis dataKey="day" stroke="#9ca3af" className="text-xs" />
+            <XAxis dataKey="day" stroke="#9ca3af" fontSize={12} />
 
             <Tooltip
               content={({ payload }) =>
-                payload?.length ? (
+                payload && payload.length ? (
                   <div className="bg-white dark:bg-gray-800 p-2 shadow rounded text-sm border dark:border-gray-700">
                     {payload[0].value}{" "}
                     {activeTab === "score"
@@ -153,8 +153,8 @@ function ProgressChart() {
 
       {/* STATS */}
       <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-        <span>🎯 Goal: {goal ? goal : "-"}</span>
-        <span>📈 Current: {data[data.length - 1].value}</span>
+        <span>🎯 Goal: {goal || "-"}</span>
+        <span>📈 Current: {currentValue}</span>
       </div>
 
       {/* AI INSIGHT */}

@@ -18,18 +18,23 @@ function Login() {
 
   const login = async () => {
     try {
-      await axios.post(
+      const loginRes = await axios.post(
         "http://localhost:8080/api/auth/login",
         {
-          email: email,
-          password: password,
+          email,
+          password,
         },
         {
           withCredentials: true,
         },
       );
 
-      // sau khi login thành công -> kiểm tra role
+      if (loginRes.status !== 200) {
+        alert("Đăng nhập thất bại");
+        return;
+      }
+
+      // kiểm tra session
       const res = await axios.get("http://localhost:8080/api/auth/me", {
         withCredentials: true,
       });

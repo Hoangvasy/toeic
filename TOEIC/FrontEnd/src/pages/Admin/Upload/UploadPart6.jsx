@@ -14,7 +14,10 @@ const UploadPart6 = ({ testId }) => {
     const loadData = async () => {
       try {
         const res = await fetch(
-          `http://localhost:8080/api/part6?testId=${testId}`
+          `http://localhost:8080/api/part6?testId=${testId}`,
+          {
+            credentials: "include",
+          },
         );
         const data = await res.json();
 
@@ -88,15 +91,13 @@ const UploadPart6 = ({ testId }) => {
         const newQuestions = p.questions.filter((_, j) => j !== qIndex);
 
         return { ...p, questions: newQuestions };
-      })
+      }),
     );
   };
 
   // ✅ PARSE FILE
   const parseQuestions = (rawText) => {
-    const text = rawText
-      .replace(/\r\n/g, "\n")
-      .replace(/\n{2,}/g, "\n");
+    const text = rawText.replace(/\r\n/g, "\n").replace(/\n{2,}/g, "\n");
 
     const answerStart = text.search(/\b\d{3}\.\s*[A-D]\s*-/);
     const mainText = answerStart !== -1 ? text.slice(0, answerStart) : text;
@@ -191,7 +192,7 @@ const UploadPart6 = ({ testId }) => {
   // ✅ UPDATE
   const updatePassage = (index, value) => {
     setPassages((prev) =>
-      prev.map((p, i) => (i === index ? { ...p, passage: value } : p))
+      prev.map((p, i) => (i === index ? { ...p, passage: value } : p)),
     );
   };
 
@@ -214,7 +215,7 @@ const UploadPart6 = ({ testId }) => {
         });
 
         return { ...p, questions: newQuestions };
-      })
+      }),
     );
   };
 
@@ -244,6 +245,7 @@ const UploadPart6 = ({ testId }) => {
       await fetch(`http://localhost:8080/api/part6/save?testId=${testId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 
@@ -257,9 +259,7 @@ const UploadPart6 = ({ testId }) => {
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
-      <h1 className="text-3xl font-bold text-center mb-6">
-        Upload Part 6
-      </h1>
+      <h1 className="text-3xl font-bold text-center mb-6">Upload Part 6</h1>
 
       <div
         onClick={() => fileRef.current.click()}
@@ -306,7 +306,7 @@ const UploadPart6 = ({ testId }) => {
                 </button>
               </div>
 
-              {['A','B','C','D'].map((opt) => (
+              {["A", "B", "C", "D"].map((opt) => (
                 <input
                   key={opt}
                   value={q.options[opt]}
@@ -317,7 +317,7 @@ const UploadPart6 = ({ testId }) => {
 
               <select
                 value={q.answer}
-                onChange={(e) => updateQuestion(i, j, 'answer', e.target.value)}
+                onChange={(e) => updateQuestion(i, j, "answer", e.target.value)}
                 className="mt-2 border p-2"
               >
                 <option value="">Answer</option>
@@ -329,7 +329,9 @@ const UploadPart6 = ({ testId }) => {
 
               <textarea
                 value={q.explanation}
-                onChange={(e) => updateQuestion(i, j, 'explanation', e.target.value)}
+                onChange={(e) =>
+                  updateQuestion(i, j, "explanation", e.target.value)
+                }
                 className="w-full border p-2 mt-2"
               />
             </div>

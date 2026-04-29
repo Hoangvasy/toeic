@@ -5,6 +5,7 @@ import com.toeic.backend.entity.ToeicTest;
 import com.toeic.backend.repository.Part5Repo;
 import com.toeic.backend.repository.ToeicTestRepo;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,12 +21,12 @@ public class Part5Service {
         this.testRepo = testRepo;
     }
 
-    // ✅ GET DATA
+    // ================= GET DATA =================
     public List<Part5> getByTestId(Long testId) {
         return repo.findByTestId(testId);
     }
 
-    // ✅ SAVE
+    // ================= SAVE =================
     public List<Part5> saveAllWithTest(List<Part5> list, Long testId) {
 
         System.out.println("========== START SAVE PART5 ==========");
@@ -37,16 +38,18 @@ public class Part5Service {
         ToeicTest test = testRepo.findById(testId)
                 .orElseThrow(() -> new RuntimeException("Test không tồn tại"));
 
-        // 🔥 xoá dữ liệu cũ (replace toàn bộ)
+        // 🔥 xoá dữ liệu cũ
         repo.deleteByTestId(testId);
         System.out.println("🗑️ DELETED OLD DATA");
 
         list.forEach(p -> {
+
             p.setTest(test);
 
             if (p.getLabel() == null) {
                 p.setLabel("unknown");
             }
+
         });
 
         List<Part5> saved = repo.saveAll(list);
@@ -56,4 +59,15 @@ public class Part5Service {
 
         return saved;
     }
+
+    // ================= PRACTICE =================
+    public List<Part5> getRandomQuestions(
+            String label,
+            int limit) {
+
+        return repo.getRandomQuestions(
+                label,
+                PageRequest.of(0, limit));
+    }
+
 }

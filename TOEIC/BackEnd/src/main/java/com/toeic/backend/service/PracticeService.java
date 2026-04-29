@@ -1,37 +1,40 @@
 package com.toeic.backend.service;
 
+import com.toeic.backend.entity.Part5;
+import com.toeic.backend.entity.PracticeAnswer;
+import com.toeic.backend.entity.PracticeSession;
+import com.toeic.backend.repository.Part5Repo;
+import com.toeic.backend.repository.Part7Repo;
+import com.toeic.backend.repository.PracticeAnswerRepo;
+import com.toeic.backend.repository.PracticeSessionRepo;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-
-import com.toeic.backend.entity.PracticeSession;
-import com.toeic.backend.entity.SkillAnalysisDTO;
-import com.toeic.backend.entity.Part5;
-import com.toeic.backend.entity.PracticeAnswer;
-import com.toeic.backend.repository.PracticeSessionRepo;
-import com.toeic.backend.repository.Part5Repo;
-import com.toeic.backend.repository.PracticeAnswerRepo;
 
 @Service
 public class PracticeService {
 
+    // repository truy cập database
     private final Part5Repo part5Repo;
     private final PracticeSessionRepo sessionRepo;
     private final PracticeAnswerRepo answerRepo;
 
+    // constructor inject dependency
     public PracticeService(
             PracticeSessionRepo sessionRepo,
             PracticeAnswerRepo answerRepo,
-            Part5Repo part5Repo) {
+            Part5Repo part5Repo,
+            Part7Repo part7Repo) {
 
         this.sessionRepo = sessionRepo;
         this.answerRepo = answerRepo;
         this.part5Repo = part5Repo;
     }
 
+    // tạo session luyện tập mới
     public PracticeSession startSession(
             Long userId,
             Integer part,
@@ -50,6 +53,7 @@ public class PracticeService {
         return sessionRepo.save(session);
     }
 
+    // lưu câu trả lời của người dùng
     public PracticeAnswer submitAnswer(
             Long sessionId,
             Long questionId,
@@ -64,8 +68,9 @@ public class PracticeService {
         answer.setUserAnswer(userAnswer);
         answer.setCorrectAnswer(correctAnswer);
 
-        // tránh NullPointerException
-        boolean isCorrect = correctAnswer != null && correctAnswer.equals(userAnswer);
+        // kiểm tra đúng/sai
+        boolean isCorrect = correctAnswer != null &&
+                correctAnswer.equals(userAnswer);
 
         answer.setIsCorrect(isCorrect);
         answer.setTimeSpent(timeSpent);
@@ -73,6 +78,7 @@ public class PracticeService {
         return answerRepo.save(answer);
     }
 
+    // kết thúc session
     public PracticeSession endSession(
             Long sessionId,
             Integer correctAnswers) {
@@ -87,6 +93,7 @@ public class PracticeService {
         return sessionRepo.save(session);
     }
 
+    // lấy danh sách câu hỏi part 5 ngẫu nhiên
     public List<Part5> getRandomPart5Questions(
             String label,
             int limit) {
@@ -94,26 +101,5 @@ public class PracticeService {
         return part5Repo.getRandomQuestions(
                 label,
                 PageRequest.of(0, limit));
-    }
-
-    public List<SkillAnalysisDTO> getPart5Analysis(Long userId) {
-
-        List<Object[]> result = answerRepo.getPart5SkillAnalysis(userId);
-
-        List<SkillAnalysisDTO> list = new ArrayList<>();
-
-        for (Object[] row : result) {
-
-            String topic = (String) row[0];
-
-            Number total = (Number) row[1];
-            Number correct = (Number) row[2];
-
-            double accuracy = (correct.doubleValue() / total.doubleValue()) * 100;
-
-            list.add(new SkillAnalysisDTO(topic, accuracy));
-        }
-
-        return list;
     }
 }

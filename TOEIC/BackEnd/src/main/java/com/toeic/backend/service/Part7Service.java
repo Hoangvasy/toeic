@@ -58,4 +58,15 @@ public class Part7Service {
     public void deleteByTestId(Long testId) {
         repo.deleteByTestId(testId);
     }
+
+    public List<Part7> getPracticeQuestions(String type) {
+
+        Long groupId = repo.getRandomGroup(type);
+
+        if (groupId == null) {
+            throw new RuntimeException("No questions for type: " + type);
+        }
+
+        return repo.findByGroupIdOrderByQuestionNumber(groupId);
+    }
 }

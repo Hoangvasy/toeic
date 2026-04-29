@@ -12,14 +12,14 @@ import com.toeic.backend.entity.PasswordResetToken;
 import com.toeic.backend.entity.User;
 import com.toeic.backend.repository.PasswordResetTokenRepository;
 import com.toeic.backend.repository.UserRepository;
-import com.toeic.backend.security.JwtUtil;
 import com.toeic.backend.service.EmailService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class AuthController {
 
     @Autowired
@@ -34,9 +34,6 @@ public class AuthController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private JwtUtil jwtUtil;
-
     // REGISTER
 
     @PostMapping("/register")
@@ -50,17 +47,22 @@ public class AuthController {
     }
 
     // LOGIN
-
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody User request, HttpSession session) {
+    public ResponseEntity<?> login(
+            @RequestBody User request,
+            HttpServletRequest httpRequest,
+            HttpSession session) {
 
         User user = userRepository.findByEmail(request.getEmail());
 
         if (user != null &&
                 passwordEncoder.matches(request.getPassword(), user.getPassword())) {
 
-            // lưu user vào session
-            session.setAttribute("user", user);
+            session.invalidate();
+            session = httpRequest.getSession(true);
+
+            session.setAttribute("userId", user.getId());
+            session.setAttribute("role", user.getRole());
 
             return ResponseEntity.ok(Map.of(
                     "email", user.getEmail(),
@@ -71,15 +73,20 @@ public class AuthController {
     }
 
     // PROFILE
-
     @GetMapping("/profile")
-    public ResponseEntity<?> profile(@RequestHeader("Authorization") String header) {
+    public ResponseEntity<?> profile(HttpSession session) {
 
-        String token = header.substring(7);
+        Long userId = (Long) session.getAttribute("userId");
 
-        String email = jwtUtil.extractUsername(token);
+        if (userId == null) {
+            return ResponseEntity.status(401).body("Not logged in");
+        }
 
-        User user = userRepository.findByEmail(email);
+        User user = userRepository.findById(userId).orElse(null);
+
+        if (user == null) {
+            return ResponseEntity.status(404).body("User not found");
+        }
 
         return ResponseEntity.ok(user);
     }
@@ -123,15 +130,16 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(HttpSession session) {
 
-        User user = (User) session.getAttribute("user");
+        Long userId = (Long) session.getAttribute("userId");
+        String role = (String) session.getAttribute("role");
 
-        if (user == null) {
+        if (userId == null) {
             return ResponseEntity.status(401).body("Not logged in");
         }
 
         return ResponseEntity.ok(Map.of(
-                "email", user.getEmail(),
-                "role", user.getRole()));
+                "userId", userId,
+                "role", role));
     }
 
 }
