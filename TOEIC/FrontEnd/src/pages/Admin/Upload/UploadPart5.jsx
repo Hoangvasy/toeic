@@ -19,7 +19,12 @@ const UploadPart5 = ({ testId }) => {
 
     const loadData = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/part5?testId=${testId}`);
+        const res = await fetch(
+          `http://localhost:8080/api/part5?testId=${testId}`,
+          {
+            credentials: "include",
+          },
+        );
         const data = await res.json();
 
         if (data && data.length > 0) {
@@ -27,15 +32,26 @@ const UploadPart5 = ({ testId }) => {
             number: q.questionNumber?.toString(),
             label: q.label || "",
             question: q.question || "",
+            translationVn: q.translationVn || "",
+
             options: {
               A: q.optionA || "",
               B: q.optionB || "",
               C: q.optionC || "",
               D: q.optionD || "",
             },
+
+            optionsVn: {
+              A: q.optionAVn || "",
+              B: q.optionBVn || "",
+              C: q.optionCVn || "",
+              D: q.optionDVn || "",
+            },
+
             answer: q.answer || "",
             explanation: q.explanation || "",
           }));
+
           setQuestions(mapped);
         } else {
           const saved = localStorage.getItem(key);
@@ -52,9 +68,11 @@ const UploadPart5 = ({ testId }) => {
   // ================= AUTO SAVE =================
   useEffect(() => {
     if (!testId) return;
+
     const timeout = setTimeout(() => {
       localStorage.setItem(key, JSON.stringify(questions));
     }, 500);
+
     return () => clearTimeout(timeout);
   }, [questions, testId]);
 
@@ -71,70 +89,71 @@ const UploadPart5 = ({ testId }) => {
     localStorage.removeItem(key);
   };
 
-  // ================= PARSE =================
   const parseQuestions = (rawText) => {
-    const text = rawText.replace(/\r\n/g, "\n").replace(/\n{2,}/g, "\n").trim();
-    const answerStart = text.search(/\d{3}\.\s*[A-D]\s*-/);
-    const questionText = answerStart !== -1 ? text.slice(0, answerStart) : text;
-    const answerText = answerStart !== -1 ? text.slice(answerStart) : "";
+  const text = rawText
+    .replace(/\r\n/g, "\n")
+    .replace(/\u00A0/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 
-    const blocks = questionText
-      .split(/(?=\d{3}\.)/)
-      .map((b) => b.trim())
-      .filter((b) => /^\d{3}\./.test(b));
+  // ✅ FIX: không bị mất câu đầu (101)
+  const blocks = text
+    .split(/(?=^\d{3}\s*$)/gm)
+    .map((b) => b.trim())
+    .filter((b) => /^\d{3}/.test(b));
 
-    const questions = blocks.map((block) => {
-      const number = block.match(/^(\d{3})\./)?.[1] || "";
-      const question = block.match(/^\d{3}\.\s*(.*?)\s*A\./s)?.[1]?.trim() || "";
+  return blocks.map((block) => {
+    const number = block.match(/^(\d{3})/)?.[1] || "";
 
-      let options = { A: "", B: "", C: "", D: "" };
-      const optMatch = block.match(
-        /A\.\s*(.*?)\s*B\.\s*(.*?)\s*C\.\s*(.*?)\s*D\.\s*(.*)/s
-      );
+    const question =
+      block.match(/Q:\s*(.*?)(?=\nQ_VN:)/s)?.[1]?.trim() || "";
 
-      if (optMatch) {
-        options = {
-          A: optMatch[1].trim(),
-          B: optMatch[2].trim(),
-          C: optMatch[3].trim(),
-          D: optMatch[4].trim(),
-        };
-      }
+    const translationVn =
+      block.match(/Q_VN:\s*(.*?)(?=\n[A-D]:)/s)?.[1]?.trim() || "";
 
-      return {
-        number,
-        label: "",
-        question,
-        options,
-        answer: "",
-        explanation: "",
-      };
-    });
+    const options = {
+      A: block.match(/A:\s*(.*?)(?=\n[A-D]_VN:|\nB:|\nANS:)/s)?.[1]?.trim() || "",
+      B: block.match(/B:\s*(.*?)(?=\n[A-D]_VN:|\nC:|\nANS:)/s)?.[1]?.trim() || "",
+      C: block.match(/C:\s*(.*?)(?=\n[A-D]_VN:|\nD:|\nANS:)/s)?.[1]?.trim() || "",
+      D: block.match(/D:\s*(.*?)(?=\n[A-D]_VN:|\nANS:)/s)?.[1]?.trim() || "",
+    };
 
-    const answers = {};
-    const answerRegex =
-      /(\d{3})\.\s*([A-D])\s*-\s*(.*?)(?=\s*\d{3}\.\s*[A-D]\s*-|$)/gs;
+    const optionsVn = {
+      A: block.match(/A_VN:\s*(.*?)(?=\nB:|\nANS:)/s)?.[1]?.trim() || "",
+      B: block.match(/B_VN:\s*(.*?)(?=\nC:|\nANS:)/s)?.[1]?.trim() || "",
+      C: block.match(/C_VN:\s*(.*?)(?=\nD:|\nANS:)/s)?.[1]?.trim() || "",
+      D: block.match(/D_VN:\s*(.*?)(?=\nANS:)/s)?.[1]?.trim() || "",
+    };
 
-    let match;
-    while ((match = answerRegex.exec(answerText)) !== null) {
-      const [, num, ans, exp] = match;
-      answers[num] = { answer: ans, explanation: exp.trim() };
-    }
+    // ✅ Parse trực tiếp
+    const answer =
+      block.match(/ANS:\s*([A-D])/i)?.[1]?.toUpperCase() || "";
 
-    return questions.map((q) => ({
-      ...q,
-      answer: answers[q.number]?.answer || "",
-      explanation: answers[q.number]?.explanation || "",
-    }));
-  };
+    const explanation =
+      block.match(/EXP:\s*([\s\S]*?)(?=\nLABEL:|$)/i)?.[1]?.trim() || "";
+
+    const label =
+      block.match(/LABEL:\s*(.*)/i)?.[1]?.trim() || "";
+
+    return {
+      number,
+      question,
+      translationVn,
+      options,
+      optionsVn,
+      answer,
+      explanation,
+      label,
+    };
+  });
+};
 
   // ================= UPLOAD =================
   const handleChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (questions.length > 0 && !window.confirm("Ghi đè dữ liệu hiện tại?"))
-      return;
+    if (questions.length > 0 && !window.confirm("Ghi đè dữ liệu hiện tại?")) return;
 
     setSelectedFile(file);
 
@@ -150,28 +169,53 @@ const UploadPart5 = ({ testId }) => {
     setQuestions((prev) =>
       prev.map((q, i) => {
         if (i !== index) return q;
+
         if (["A", "B", "C", "D"].includes(field)) {
-          return { ...q, options: { ...q.options, [field]: value } };
+          return {
+            ...q,
+            options: { ...q.options, [field]: value },
+          };
         }
+
+        if (["AVn", "BVn", "CVn", "DVn"].includes(field)) {
+          return {
+            ...q,
+            optionsVn: {
+              ...q.optionsVn,
+              [field.replace("Vn", "")]: value,
+            },
+          };
+        }
+
         return { ...q, [field]: value };
-      })
+      }),
     );
   };
 
   // ================= SAVE =================
   const handleSave = async () => {
     if (!testId) return alert("❗ Chọn đề trước!");
-    if (questions.some((q) => !q.answer)) return alert("⚠ Thiếu đáp án!");
+    if (questions.some((q) => !q.answer))
+      return alert("⚠ Thiếu đáp án!");
 
     const payload = questions.map((q) => ({
       testId,
       questionNumber: parseInt(q.number),
       label: q.label,
+
       question: q.question,
+      translationVn: q.translationVn,
+
       optionA: q.options.A,
       optionB: q.options.B,
       optionC: q.options.C,
       optionD: q.options.D,
+
+      optionAVn: q.optionsVn?.A || "",
+      optionBVn: q.optionsVn?.B || "",
+      optionCVn: q.optionsVn?.C || "",
+      optionDVn: q.optionsVn?.D || "",
+
       answer: q.answer,
       explanation: q.explanation,
     }));
@@ -180,6 +224,7 @@ const UploadPart5 = ({ testId }) => {
       await fetch(`http://localhost:8080/api/part5/save?testId=${testId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 
@@ -191,7 +236,7 @@ const UploadPart5 = ({ testId }) => {
     }
   };
 
-  // ================= AI ALL =================
+  // ================= AI =================
   const analyzeAllWithAI = async () => {
     if (questions.length === 0 || isAnalyzing) return;
 
@@ -215,6 +260,7 @@ D. ${q.options.D}`;
         const res = await fetch("http://localhost:8080/api/ai/analyze", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ question: block }),
         });
 
@@ -233,7 +279,7 @@ D. ${q.options.D}`;
       setProgress(Math.round(((i + 1) / questions.length) * 100));
       setQuestions([...updated]);
 
-      await new Promise((res) => setTimeout(res, 300));
+      await new Promise((r) => setTimeout(r, 1200));
     }
 
     setIsAnalyzing(false);
@@ -243,9 +289,9 @@ D. ${q.options.D}`;
     alert("✅ Hoàn tất!");
   };
 
-  // ================= FILTER FIX =================
+  // ================= FILTER =================
   const filtered = questions.filter((q) =>
-    q.question.toLowerCase().includes(search.toLowerCase())
+    q.question.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
@@ -257,49 +303,30 @@ D. ${q.options.D}`;
       onDiscard={handleDiscard}
       onSave={handleSave}
     >
-
       {questions.length > 0 && (
-        <>
-          <div className="flex flex-col sm:flex-row gap-3 mb-6">
-            <input
-              placeholder="🔍 Search..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 border p-3 rounded-xl"
-            />
+        <div className="flex gap-3 mb-6">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search..."
+            className="flex-1 border p-3 rounded-xl"
+          />
 
-            <button
-              onClick={analyzeAllWithAI}
-              disabled={isAnalyzing}
-              className="bg-purple-600 text-white px-6 py-3 rounded-xl"
-            >
-              {isAnalyzing
-                ? `Đang phân tích... ${progress}%`
-                : `🤖 AI (${questions.length} câu)`}
-            </button>
-          </div>
-        </>
-      )}
-
-      {isAnalyzing && (
-        <div className="mb-6">
-          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-purple-600"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <p className="text-center text-sm text-gray-500 mt-1">
-            Câu {analyzingIndex + 1}/{questions.length}
-          </p>
+          <button
+            onClick={analyzeAllWithAI}
+            disabled={isAnalyzing}
+            className="bg-purple-600 text-white px-6 py-3 rounded-xl"
+          >
+            {isAnalyzing
+              ? `AI... ${progress}%`
+              : `🤖 AI (${questions.length})`}
+          </button>
         </div>
       )}
 
       <div className="space-y-6">
         {filtered.map((q) => {
-          const realIndex = questions.findIndex(
-            (item) => item.number === q.number
-          );
+          const realIndex = questions.findIndex((i) => i.number === q.number);
 
           return (
             <QuestionCard

@@ -3,13 +3,14 @@ package com.toeic.backend.controller;
 import com.toeic.backend.entity.Part6;
 import com.toeic.backend.service.Part6Service;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/part6")
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class Part6Controller {
 
     private final Part6Service service;
@@ -18,23 +19,26 @@ public class Part6Controller {
         this.service = service;
     }
 
-    // ✅ SAVE
+    // SAVE
     @PostMapping("/save")
-    public List<Part6> save(
+    public ResponseEntity<?> save(
             @RequestBody List<Part6> list,
             @RequestParam Long testId) {
-        return service.saveAllWithTest(list, testId);
+
+        List<Part6> saved = service.saveAllWithTest(list, testId);
+        return ResponseEntity.ok(saved);
     }
 
-    // ✅ GET (🔥 CÁI BẠN THIẾU)
+    // GET
     @GetMapping
-    public List<Part6> getByTestId(@RequestParam Long testId) {
-        return service.getByTestId(testId);
+    public ResponseEntity<List<Part6>> getByTestId(@RequestParam Long testId) {
+        return ResponseEntity.ok(service.getByTestId(testId));
     }
 
-    // ✅ DELETE (bonus - rất hữu ích)
+    // DELETE
     @DeleteMapping
-    public void deleteByTestId(@RequestParam Long testId) {
+    public ResponseEntity<?> deleteByTestId(@RequestParam Long testId) {
         service.deleteByTestId(testId);
+        return ResponseEntity.ok("Deleted");
     }
 }

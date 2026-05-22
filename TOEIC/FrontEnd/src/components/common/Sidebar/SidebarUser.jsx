@@ -1,27 +1,61 @@
 import { NavLink, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   ClipboardList,
   BookOpen,
   Cpu,
-  BarChart3,
   User,
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
+  BookMarked,
+  History,
 } from "lucide-react";
 
 const menu = [
   { name: "Tổng quan", path: "/dashboard", icon: LayoutDashboard },
   { name: "Kiểm tra", path: "/diagnostic", icon: ClipboardList },
+  { name: "Luyện đề", path: "/practicetest", icon: BookOpen },
   { name: "Luyện tập", path: "/practice", icon: BookOpen },
-  { name: "AI Path", path: "/ai-path", icon: Cpu },
-  { name: "Tiến độ", path: "/progress", icon: BarChart3 },
+  { name: "Từ vựng", path: "/vocabulary", icon: BookMarked },
+  { name: "AI Path", path: "/aipath", icon: Cpu },
+  { name: "Lịch sử", path: "/history", icon: History },
   { name: "Hồ sơ", path: "/profile", icon: User },
 ];
 
 function SidebarUser({ collapsed, setCollapsed, onClose }) {
   const navigate = useNavigate();
+  const [user, setUser] = useState({
+    username: "",
+
+    avatar: "",
+  });
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        // current user
+        const me = await fetch("http://localhost:8080/api/auth/me", {
+          credentials: "include",
+        }).then((r) => r.json());
+
+        // profile
+        const profile = await fetch(
+          `http://localhost:8080/api/user/${me.userId}`,
+          {
+            credentials: "include",
+          },
+        ).then((r) => r.json());
+
+        setUser(profile);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   const logout = async () => {
     try {
@@ -114,15 +148,37 @@ function SidebarUser({ collapsed, setCollapsed, onClose }) {
           transition
           "
         >
-          <img
-            src="https://i.pravatar.cc/100"
-            className="w-9 h-9 rounded-full"
-          />
+          {user.avatar ? (
+            <img
+              src={`http://localhost:8080${user.avatar}`}
+              alt="avatar"
+              className="
+    w-9 h-9
+    rounded-full
+    object-cover
+    "
+            />
+          ) : (
+            <div
+              className="
+                w-9 h-9
+                rounded-full
+                bg-blue-600
+                text-white
+                flex
+                items-center
+                justify-center
+                font-semibold
+                "
+            >
+              {user.username?.charAt(0)}
+            </div>
+          )}
 
           {!collapsed && (
             <div>
               <p className="text-sm font-semibold text-gray-900 dark:text-gray-200">
-                Thắng Hoàng
+                {user.username || "User"}
               </p>
 
               <p className="text-xs text-gray-500 dark:text-gray-400">

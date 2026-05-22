@@ -1,4 +1,6 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import axios from "axios";
+
 import {
   LayoutDashboard,
   FileText,
@@ -20,6 +22,22 @@ const menu = [
 ];
 
 function SidebarAdmin({ collapsed, setCollapsed }) {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await axios.post(
+        "http://localhost:8080/api/auth/logout",
+        {},
+        { withCredentials: true },
+      );
+
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
   return (
     <div
       className={`
@@ -85,7 +103,7 @@ function SidebarAdmin({ collapsed, setCollapsed }) {
 
       {/* BOTTOM */}
       <div className="space-y-3">
-        {/* ADMIN */}
+        {/* ADMIN INFO */}
         <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
           <img
             src="https://i.pravatar.cc/100"
@@ -101,7 +119,10 @@ function SidebarAdmin({ collapsed, setCollapsed }) {
         </div>
 
         {/* LOGOUT */}
-        <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20">
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+        >
           <LogOut className="w-5 h-5" />
           {!collapsed && <span>Đăng xuất</span>}
         </button>

@@ -1,99 +1,139 @@
-// Dashboard.jsx
-import { motion } from "framer-motion";
-import { dashboardData } from "../../../mockData";
+import { useEffect, useState } from "react";
 
-// Components
+import { motion } from "framer-motion";
+
 import WelcomeCard from "./WelcomeCard";
-import AICard from "./AICard";
-import StatsCard from "./StatsCard";
-import WeaknessCard from "./WeaknessCard";
-import PredictionCard from "./PredictionCard";
 import QuickAction from "./QuickAction";
 import ActivityCard from "./ActivityCard";
-import ProgressChart from "./ProgressChart";
 import CalendarCard from "./CalendarCard";
 
 function Dashboard() {
-  const { user, ai, stats, activity } = dashboardData;
+  const [user, setUser] = useState(null);
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const me = await fetch("http://localhost:8080/api/auth/me", {
+          credentials: "include",
+        }).then((r) => r.json());
+
+        const profile = await fetch(
+          `http://localhost:8080/api/user/${me.userId}`,
+          {
+            credentials: "include",
+          },
+        ).then((r) => r.json());
+
+        setUser(profile);
+      } catch (err) {
+        console.error("load user error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  if (loading) {
+    return (
+      <div
+        className="
+        space-y-6
+        animate-pulse
+        "
+      >
+        <div
+          className="
+          h-[260px]
+          rounded-3xl
+          bg-slate-200
+          dark:bg-slate-800
+          "
+        />
+
+        <div
+          className="
+          grid
+          grid-cols-2
+          md:grid-cols-4
+          gap-6
+          "
+        >
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="
+                h-32
+                rounded-3xl
+                bg-slate-200
+                dark:bg-slate-800
+                "
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <motion.div
-        className="grid grid-cols-1 md:grid-cols-3 gap-6"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <WelcomeCard user={user} ai={ai} />
+        initial={{
+          opacity: 0,
+          y: 20,
+        }}
+        animate={{
+          opacity: 1,
+          y: 0,
+        }}
+        transition={{
+          duration: 0.4,
+        }}
+        className="
+        grid
+        grid-cols-1
+        xl:grid-cols-12
 
-        {/* CTA card */}
+        gap-6
+        "
+      >
+        {/* WELCOME */}
+
         <div
           className="
-          bg-white dark:bg-gray-900
-          border border-gray-200 dark:border-gray-800
-          rounded-2xl p-6 shadow-sm
-          flex flex-col justify-between
-          transition
+          xl:col-span-8
           "
         >
-          <div>
-            <h3 className="font-semibold text-blue-900 dark:text-blue-400">
-              🚀 Continue Learning
-            </h3>
+          <WelcomeCard user={user} />
+        </div>
 
-            <p className="text-gray-500 dark:text-gray-400 text-sm">
-              Học theo lộ trình AI đề xuất
-            </p>
-          </div>
+        {/* CALENDAR */}
 
-          <button
-            className="
-            mt-4
-            bg-blue-600 hover:bg-blue-700
-            text-white
-            py-2 rounded-xl
-            transition transform hover:scale-105
-            "
-          >
-            Start Now
-          </button>
+        <div
+          className="
+          xl:col-span-4
+          h-full
+          "
+        >
+          <CalendarCard userId={user?.id} streakDays={user?.streakDays} />
         </div>
       </motion.div>
 
-      {/* AI Insight */}
-      <AICard ai={ai} />
+      <div
+        className="
+        grid
+        grid-cols-1
+        lg:grid-cols-3
+        gap-6
+        "
+      ></div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        <StatsCard title="Tổng điểm" value={stats.totalPoints} />
-        <StatsCard title="Đã dùng" value={stats.used} />
-        <StatsCard title="Còn lại" value={stats.remaining} />
-        <StatsCard title="Streak" value={`${user.streak} ngày`} />
-      </div>
-
-      {/* Chart + Calendar */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <ProgressChart />
-        </div>
-
-        <CalendarCard />
-      </div>
-
-      {/* Prediction + Weakness */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <PredictionCard ai={ai} />
-
-        <div className="lg:col-span-2">
-          <WeaknessCard ai={ai} />
-        </div>
-      </div>
-
-      {/* Quick Action */}
       <QuickAction />
 
-      {/* Activity */}
-      <ActivityCard activity={activity} />
+      <ActivityCard />
     </div>
   );
 }

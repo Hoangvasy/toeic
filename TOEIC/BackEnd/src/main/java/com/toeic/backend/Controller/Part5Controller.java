@@ -31,4 +31,14 @@ public class Part5Controller {
     public List<Part5> getByTestId(@RequestParam Long testId) {
         return service.getByTestId(testId);
     }
+
+    @GetMapping("/label")
+public List<Part5> getByLabel(@RequestParam String label) {
+    return service.getByLabel(label);
+}
+
+@GetMapping("/all")
+public List<Part5> getAll() {
+    return service.getAll();
+}
 }

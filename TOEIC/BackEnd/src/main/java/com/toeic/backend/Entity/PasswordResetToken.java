@@ -2,6 +2,8 @@ package com.toeic.backend.entity;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 public class PasswordResetToken {
 
@@ -11,7 +13,10 @@ public class PasswordResetToken {
 
     private String token;
 
+    private LocalDateTime expiryDate;
+
     @OneToOne
+    @JoinColumn(name = "user_id", unique = true)
     private User user;
 
     public Long getId() {
@@ -30,6 +35,16 @@ public class PasswordResetToken {
         this.token = token;
     }
 
+    public LocalDateTime getExpiryDate() {
+        return expiryDate;
+    }
+
+    public void setExpiryDate(
+            LocalDateTime expiryDate) {
+
+        this.expiryDate = expiryDate;
+    }
+
     public User getUser() {
         return user;
     }
@@ -37,5 +52,4 @@ public class PasswordResetToken {
     public void setUser(User user) {
         this.user = user;
     }
-
 }

@@ -1,5 +1,5 @@
 package com.toeic.backend.entity;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -17,17 +17,33 @@ public class Part5 {
     @Column(columnDefinition = "TEXT")
     private String question;
 
+    // ✅ DỊCH CÂU HỎI
+    @Column(name = "translation_vn", columnDefinition = "TEXT")
+    private String translationVn;
+
     @Column(name = "option_a")
     private String optionA;
+
+    @Column(name = "option_a_vn")
+    private String optionAVn;
 
     @Column(name = "option_b")
     private String optionB;
 
+    @Column(name = "option_b_vn")
+    private String optionBVn;
+
     @Column(name = "option_c")
     private String optionC;
 
+    @Column(name = "option_c_vn")
+    private String optionCVn;
+
     @Column(name = "option_d")
     private String optionD;
+
+    @Column(name = "option_d_vn")
+    private String optionDVn;
 
     @Column(name = "answer")
     private String answer;
@@ -35,13 +51,17 @@ public class Part5 {
     @Column(columnDefinition = "TEXT")
     private String explanation;
 
-    // ✅ THÊM LABEL
+    // ✅ LABEL
     @Column(name = "label")
     private String label;
+
+    @Column(name = "difficulty")
+private Float difficulty = 0.5f;
 
     // ✅ RELATIONSHIP
     @ManyToOne
     @JoinColumn(name = "test_id")
+    @JsonIgnore
     private ToeicTest test;
 
     // ===== GETTER & SETTER =====
@@ -66,12 +86,30 @@ public class Part5 {
         this.question = question;
     }
 
+    // ===== TRANSLATION =====
+
+    public String getTranslationVn() {
+        return translationVn;
+    }
+
+    public void setTranslationVn(String translationVn) {
+        this.translationVn = translationVn;
+    }
+
     public String getOptionA() {
         return optionA;
     }
 
     public void setOptionA(String optionA) {
         this.optionA = optionA;
+    }
+
+    public String getOptionAVn() {
+        return optionAVn;
+    }
+
+    public void setOptionAVn(String optionAVn) {
+        this.optionAVn = optionAVn;
     }
 
     public String getOptionB() {
@@ -82,12 +120,28 @@ public class Part5 {
         this.optionB = optionB;
     }
 
+    public String getOptionBVn() {
+        return optionBVn;
+    }
+
+    public void setOptionBVn(String optionBVn) {
+        this.optionBVn = optionBVn;
+    }
+
     public String getOptionC() {
         return optionC;
     }
 
     public void setOptionC(String optionC) {
         this.optionC = optionC;
+    }
+
+    public String getOptionCVn() {
+        return optionCVn;
+    }
+
+    public void setOptionCVn(String optionCVn) {
+        this.optionCVn = optionCVn;
     }
 
     public String getOptionD() {
@@ -97,6 +151,16 @@ public class Part5 {
     public void setOptionD(String optionD) {
         this.optionD = optionD;
     }
+
+    public String getOptionDVn() {
+        return optionDVn;
+    }
+
+    public void setOptionDVn(String optionDVn) {
+        this.optionDVn = optionDVn;
+    }
+
+    // ===== OTHER =====
 
     public String getAnswer() {
         return answer;
@@ -114,7 +178,6 @@ public class Part5 {
         this.explanation = explanation;
     }
 
-    // ✅ LABEL
     public String getLabel() {
         return label;
     }
@@ -123,7 +186,13 @@ public class Part5 {
         this.label = label;
     }
 
-    // ✅ TEST
+    public Float getDifficulty() {
+    return difficulty;
+}
+public void setDifficulty(Float difficulty) {
+    this.difficulty = difficulty;
+}
+
     public ToeicTest getTest() {
         return test;
     }

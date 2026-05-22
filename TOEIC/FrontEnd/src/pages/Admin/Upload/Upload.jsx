@@ -11,8 +11,8 @@ export default function Upload() {
 
   useEffect(() => {
     fetch("http://localhost:8080/api/tests")
-      .then(res => res.json())
-      .then(data => setTests(data));
+      .then((res) => res.json())
+      .then((data) => setTests(data));
   }, []);
 
   const handleCreateTest = async () => {
@@ -24,8 +24,8 @@ export default function Upload() {
       body: JSON.stringify({
         title: newTitle,
         description: "Full test",
-        status: "DRAFT"
-      })
+        status: "DRAFT",
+      }),
     });
 
     const data = await res.json();
@@ -56,19 +56,15 @@ export default function Upload() {
 
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {tests.map(test => (
+        {tests.map((test) => (
           <div
             key={test.id}
             className={`bg-white p-5 rounded-2xl shadow cursor-pointer border ${testId === test.id ? "border-blue-500" : ""}`}
             onClick={() => setTestId(test.id)}
           >
-            <h2 className="font-semibold text-lg mb-2">
-              {test.title}
-            </h2>
+            <h2 className="font-semibold text-lg mb-2">{test.title}</h2>
 
-            <p className="text-sm text-gray-500 mb-2">
-              ⏱ 120 phút
-            </p>
+            <p className="text-sm text-gray-500 mb-2">⏱ 120 phút</p>
 
             <p className="text-sm text-gray-500 mb-2">
               7 phần thi | 200 câu hỏi
@@ -91,7 +87,7 @@ export default function Upload() {
       {testId && (
         <div className="mt-8">
           <div className="flex gap-3 mb-4">
-            {[5,6,7].map(p => (
+            {[5, 6, 7].map((p) => (
               <button
                 key={p}
                 onClick={() => setPart(p)}
@@ -108,9 +104,7 @@ export default function Upload() {
         </div>
       )}
 
-      {!testId && (
-        <p className="text-red-500 mt-6">Chọn đề trước!</p>
-      )}
+      {!testId && <p className="text-red-500 mt-6">Chọn đề trước!</p>}
     </div>
   );
 }

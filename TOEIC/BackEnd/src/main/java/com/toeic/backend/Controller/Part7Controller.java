@@ -1,9 +1,9 @@
 package com.toeic.backend.controller;
 
-import com.toeic.backend.entity.Part7;
+import com.toeic.backend.entity.Part7Group;
 import com.toeic.backend.service.Part7Service;
-
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -17,23 +17,24 @@ public class Part7Controller {
         this.service = service;
     }
 
-    // ✅ SAVE / UPLOAD PART7
+    // ✅ SAVE FULL GROUP + QUESTIONS
     @PostMapping("/save")
-    public List<Part7> save(
-            @RequestBody List<Part7> list,
+    public List<Part7Group> save(
+            @RequestBody List<Part7Group> groups,
             @RequestParam Long testId) {
-        return service.saveAllWithTest(list, testId);
+
+        return service.saveAll(groups, testId);
     }
 
-    // ✅ GET PART7 theo testId
+    // ✅ GET BY TEST
     @GetMapping
-    public List<Part7> getByTestId(@RequestParam Long testId) {
+    public List<Part7Group> get(@RequestParam Long testId) {
         return service.getByTestId(testId);
     }
 
-    // ✅ DELETE PART7 theo testId (optional, rất hữu ích)
+    // ✅ DELETE ALL BY TEST
     @DeleteMapping
-    public void deleteByTestId(@RequestParam Long testId) {
+    public void delete(@RequestParam Long testId) {
         service.deleteByTestId(testId);
     }
 }

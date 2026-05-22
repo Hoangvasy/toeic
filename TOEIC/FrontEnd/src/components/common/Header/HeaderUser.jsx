@@ -1,8 +1,54 @@
 import { Search, Bell, Sun, Moon, ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function HeaderUser({ darkMode, toggleDarkMode }) {
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState(null);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        // current login
+        const me = await axios.get("http://localhost:8080/api/auth/me", {
+          withCredentials: true,
+        });
+
+        // profile
+        const profile = await axios.get(
+          `http://localhost:8080/api/user/${me.data.userId}`,
+          {
+            withCredentials: true,
+          },
+        );
+
+        setUser(profile.data);
+      } catch (err) {
+        console.error(err);
+
+        navigate("/login");
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await axios.post(
+        "http://localhost:8080/api/auth/logout",
+        {},
+        { withCredentials: true },
+      );
+
+      navigate("/login");
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+  };
 
   return (
     <div className="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 sticky top-0 z-40">
@@ -25,13 +71,7 @@ function HeaderUser({ darkMode, toggleDarkMode }) {
         {/* DARK MODE */}
         <button
           onClick={toggleDarkMode}
-          className="
-          w-10 h-10 flex items-center justify-center
-          border border-gray-300 dark:border-gray-700
-          rounded-lg
-          hover:bg-gray-100 dark:hover:bg-gray-800
-          transition
-          "
+          className="w-10 h-10 flex items-center justify-center border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
         >
           {darkMode ? (
             <Sun className="w-5 h-5 text-yellow-400" />
@@ -54,13 +94,36 @@ function HeaderUser({ darkMode, toggleDarkMode }) {
             onClick={() => setOpen(!open)}
             className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1 rounded-lg"
           >
-            <img
-              src="https://i.pravatar.cc/100"
-              className="w-8 h-8 rounded-full"
-            />
+            {user?.avatar ? (
+              <img
+                src={`http://localhost:8080${user.avatar}`}
+                alt="avatar"
+                className="
+                  w-8 h-8
+                  rounded-full
+                  object-cover
+                  "
+              />
+            ) : (
+              <div
+                className="
+                  w-8 h-8
+                  rounded-full
+                  bg-blue-600
+                  text-white
+                  flex
+                  items-center
+                  justify-center
+                  text-sm
+                  font-semibold
+                  "
+              >
+                {user?.username?.charAt(0) || "U"}
+              </div>
+            )}
 
             <span className="hidden sm:block text-sm font-medium">
-              Thắng Hoàng
+              {user?.username || user?.email || "User"}
             </span>
 
             <ChevronDown className="w-4 h-4 text-gray-500" />
@@ -78,7 +141,10 @@ function HeaderUser({ darkMode, toggleDarkMode }) {
 
               <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
 
-              <button className="w-full text-left px-4 py-2 hover:bg-red-50 text-red-500 text-sm">
+              <button
+                onClick={handleLogout}
+                className="w-full text-left px-4 py-2 hover:bg-red-50 text-red-500 text-sm"
+              >
                 Đăng xuất
               </button>
             </div>
